@@ -1,0 +1,272 @@
+# Mathesis Platform
+
+> AI 기반 교육 인텔리전스 플랫폼 - MSA 아키텍처
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Microservices](https://img.shields.io/badge/architecture-microservices-green.svg)](./architecture/01_MSA_ARCHITECTURE.md)
+
+---
+
+## 🎯 Vision
+
+교육 빅데이터와 AI를 결합하여 **개인화된 학습 경험**을 제공하는 통합 교육 플랫폼
+
+### 핵심 가치
+- 📚 **지식 그래프**: 교육 이론을 실행 가능한 로직으로 변환
+- 🎯 **적응형 학습**: 학생 수준에 맞춘 문제 추천 (BKT/IRT)
+- 📊 **심층 분석**: 시험지 데이터를 교육공학적 관점에서 분석
+- 🏫 **학교 인텔리전스**: 학교별 맞춤 교육 정보 제공
+
+---
+
+## 🏗️ MSA Architecture
+
+4개의 독립 마이크로서비스 + 공통 라이브러리로 구성
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  Mathesis Platform                       │
+├─────────────────────────────────────────────────────────┤
+│  Node 1        Node 2         Node 5        Node 6      │
+│  Logic         Q-DNA          Q-Metrics     School      │
+│  Engine        문제은행        시험분석      Info        │
+│  교육이론       BKT/IRT        교육공학      RAG         │
+├─────────────────────────────────────────────────────────┤
+│              mathesis-common (공통 라이브러리)            │
+│       LLM • Database • Crawlers • Export                │
+└─────────────────────────────────────────────────────────┘
+```
+
+**상세 문서**: [MSA 아키텍처](./architecture/01_MSA_ARCHITECTURE.md)
+
+---
+
+## 📦 Services Overview
+
+| Service | Port | Domain | Tech Stack | Status |
+|---------|------|--------|------------|--------|
+| **[Node 1: Logic Engine](../node1_logic_engine/)** | 8001 | 교육 이론 지식 그래프 | Python, Neo4j, Ollama | ✅ Production |
+| **[Node 2: Q-DNA](../node2_q_dna/)** | 8002 | 지능형 문제 은행 | FastAPI, PostgreSQL, Tesseract | ✅ Production |
+| **[Node 5: Q-Metrics](../node5_q_metrics/)** | 8005 | 시험지 분석 시스템 | FastAPI, Neo4j, Redis | 🚧 Beta |
+| **[Node 6: School Info](../node6_school_info/)** | 8006 | 학교 정보 RAG | FastAPI, ChromaDB, Typst | ✅ Production |
+| **[mathesis-common](../mathesis-common/)** | - | 공통 라이브러리 | Python Package | ✅ Stable |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+```bash
+# Docker & Docker Compose
+docker --version  # 24.0+
+
+# Ollama (로컬 LLM)
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3:latest
+ollama pull nomic-embed-text
+```
+
+### Launch All Services (30분)
+```bash
+# 1. Clone repository
+git clone <repository-url>
+cd mathesis
+
+# 2. Environment setup
+cp .env.example .env
+
+# 3. Start all services
+docker-compose up -d
+
+# 4. Verify
+docker-compose ps
+```
+
+### Access Services
+- **Logic Engine**: http://localhost:8001/docs
+- **Q-DNA**: http://localhost:8002/docs
+- **Q-Metrics**: http://localhost:8005/docs
+- **School Info**: http://localhost:8006/docs
+
+**상세 가이드**: [Quick Start Guide](./guides/QUICKSTART.md)
+
+---
+
+## 📚 Documentation
+
+### Architecture
+- [00. System Overview](./architecture/00_SYSTEM_OVERVIEW.md) - 시스템 전체 개요
+- [01. MSA Architecture](./architecture/01_MSA_ARCHITECTURE.md) - 마이크로서비스 아키텍처
+- [02. Service Map](./architecture/02_SERVICE_MAP.md) - 서비스 간 관계도
+- [03. Data Flow](./architecture/03_DATA_FLOW.md) - 데이터 흐름
+- [04. Infrastructure](./architecture/04_INFRASTRUCTURE.md) - 인프라 구성
+
+### Diagrams
+- [System Context](./diagrams/system_context.puml) - C4 Level 1
+- [Container Diagram](./diagrams/container_diagram.puml) - C4 Level 2
+- [Service Interactions](./diagrams/service_interactions.puml) - 시퀀스 다이어그램
+- [Deployment](./diagrams/deployment.puml) - 배포 구조
+
+### API
+- [API Gateway](./api/00_API_GATEWAY.md) - API 게이트웨이 (계획)
+- [Service Contracts](./api/01_SERVICE_CONTRACTS.md) - 서비스 간 계약
+- [OpenAPI Specs](./api/openapi/) - Swagger/OpenAPI 명세
+
+### Guides
+- [Quick Start](./guides/QUICKSTART.md) - 빠른 시작
+- [Deployment](./guides/DEPLOYMENT.md) - 배포 가이드
+- [Monitoring](./guides/MONITORING.md) - 모니터링
+- [Troubleshooting](./guides/TROUBLESHOOTING.md) - 문제 해결
+
+### ADR (Architecture Decision Records)
+- [001. MSA Adoption](./adr/001-msa-adoption.md) - MSA 도입 결정
+- [002. Common Library Strategy](./adr/002-common-library-strategy.md) - 공통 라이브러리 전략
+- [003. Data Consistency](./adr/003-data-consistency.md) - 데이터 일관성
+
+---
+
+## 🔧 Technology Stack
+
+### Backend
+- **Python 3.11+** - 모든 서비스
+- **FastAPI** - REST API 프레임워크
+- **Ollama** - 로컬 LLM (Llama 3, Qwen)
+
+### Databases
+- **PostgreSQL 14+** - Q-DNA, Logic Engine
+- **Neo4j 5.x** - Logic Engine, Q-Metrics (지식 그래프)
+- **ChromaDB** - School Info (벡터 DB)
+- **Redis** - Q-Metrics (캐시)
+
+### AI/ML
+- **Ollama** - 로컬 LLM 추론
+- **Tesseract OCR** - 문제 이미지 인식
+- **BKT/IRT** - 학습 추적 및 문제 난이도 측정
+
+### Document Processing
+- **GROBID** - 학술 논문 파싱
+- **pdfplumber** - PDF 테이블 추출
+- **Typst** - 고품질 PDF 생성
+
+### Frontend
+- **React 19 + TypeScript** - Q-DNA, Logic Engine
+- **React Flow** - 지식 그래프 시각화
+- **TailwindCSS** - 스타일링
+
+---
+
+## 🎯 Use Cases
+
+### 1. 학생 - 개인화 학습
+```
+학생 로그인
+  → Q-DNA: 현재 실력 분석 (BKT)
+  → Q-DNA: 맞춤 문제 추천 (IRT)
+  → Q-Metrics: 풀이 분석 및 피드백
+```
+
+### 2. 교사 - 시험 분석
+```
+시험지 업로드
+  → Q-Metrics: OCR + 시맨틱 분석
+  → Q-Metrics: 교육공학 프레임워크 적용
+  → Q-Metrics: 분석 리포트 생성
+```
+
+### 3. 연구자 - 이론 탐색
+```
+논문 PDF 업로드
+  → Logic Engine: GROBID 파싱
+  → Logic Engine: 개념 추출 (LLM)
+  → Logic Engine: Neo4j 지식 그래프 구축
+  → Logic Engine: GraphRAG 질의
+```
+
+### 4. 학부모 - 학교 정보 조회
+```
+학교명 검색
+  → School Info: 크롤링 (schoolinfo.go.kr)
+  → School Info: PDF → Enhanced JSON
+  → School Info: RAG 질의응답
+  → School Info: 학교별 평가 계획 제공
+```
+
+---
+
+## 📈 Roadmap
+
+### Phase 1: Core Services (✅ 완료)
+- [x] Logic Engine - 교육 이론 지식 그래프
+- [x] Q-DNA - 문제 은행 + BKT/IRT
+- [x] School Info - 학교 정보 RAG
+- [x] mathesis-common - 공통 라이브러리
+
+### Phase 2: Advanced Features (🚧 진행 중)
+- [x] Q-Metrics - 시험 분석
+- [ ] API Gateway 구축
+- [ ] 이벤트 기반 통신 (RabbitMQ/Kafka)
+- [ ] 중앙 인증/인가 (Keycloak)
+
+### Phase 3: Production Ready (📋 계획)
+- [ ] Kubernetes 배포
+- [ ] Service Mesh (Istio)
+- [ ] 중앙 로깅 (ELK Stack)
+- [ ] 모니터링 (Prometheus + Grafana)
+- [ ] CI/CD 파이프라인 (GitHub Actions)
+
+---
+
+## 🤝 Contributing
+
+### Development Workflow
+```bash
+# 1. Fork & Clone
+git clone <your-fork>
+
+# 2. Create feature branch
+git checkout -b feature/your-feature
+
+# 3. Develop (각 서비스는 독립 개발 가능)
+cd node2_q_dna
+python main.py
+
+# 4. Test
+pytest tests/
+
+# 5. Submit PR
+```
+
+### Code Standards
+- **Python**: PEP 8, Type Hints 필수
+- **TypeScript**: ESLint + Prettier
+- **Documentation**: 모든 API는 OpenAPI 명세 작성
+
+---
+
+## 📞 Support
+
+- **Documentation**: [/docs](./architecture/)
+- **Issues**: GitHub Issues
+- **Discussions**: GitHub Discussions
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](../LICENSE) for details
+
+---
+
+## 🙏 Acknowledgments
+
+- **Ollama** - 로컬 LLM 실행 환경
+- **Neo4j** - 지식 그래프 데이터베이스
+- **FastAPI** - 고성능 Python 웹 프레임워크
+- **schoolinfo.go.kr** - 학교 공시 데이터
+
+---
+
+**Last Updated**: 2026-01-08
+**Version**: 1.0.0
+**Architecture**: Microservices (MSA)
