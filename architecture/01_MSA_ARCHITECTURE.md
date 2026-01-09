@@ -1,9 +1,9 @@
 # Mathesis MSA Architecture
 
-> Microservices Architecture for Educational Intelligence Platform
+> Microservices Architecture for Educational Intelligence Platform with Master Node
 
-**Last Updated**: 2026-01-08
-**Version**: 1.0
+**Last Updated**: 2026-01-09
+**Version**: 1.1
 **Status**: Production (Phase 2 진행 중)
 
 ---
@@ -16,10 +16,15 @@
 
 | Service | Bounded Context | Core Domain |
 |---------|-----------------|-------------|
-| **Logic Engine** | 교육 이론 관리 | 지식 그래프, 개념 관계 |
-| **Q-DNA** | 문제 생명주기 | 문제 은행, 학습 추적 |
-| **Q-Metrics** | 평가 데이터 분석 | 시험 분석, 교육공학 |
-| **School Info** | 외부 데이터 통합 | 크롤링, RAG |
+| **Node 0: Student Hub** 🌟 | 학생 통합 관리 & 워크플로우 | 학생 마스터 데이터, 학습 경로, 자동 개입 |
+| **Node 1: Logic Engine** | 교육 이론 관리 | 지식 그래프, 개념 관계 |
+| **Node 2: Q-DNA** | 문제 생명주기 | 문제 은행, 학습 추적 (BKT/IRT) |
+| **Node 3: Gen Node** | 문제 생성 | AI 기반 맞춤형 문제 생성 |
+| **Node 4: Lab Node** | 학습 활동 추적 | 히트맵, 활동 로그, 실패 패턴 |
+| **Node 5: Report Node** | 진단 리포트 | Typst 리포트, 성장 차트, AI 진단 |
+| **Node 6: School Info** | 외부 데이터 통합 | 크롤링, RAG |
+
+🌟 **Node 0 (Student Hub)**: 유일한 마스터 노드로서 MCP Server + Client 역할을 동시에 수행
 
 ### 1.2 Service Independence
 
@@ -57,6 +62,84 @@ School Info    → ChromaDB (벡터) + 파일시스템
 ---
 
 ## 2. Service Catalog
+
+### 2.0 Node 0: Student Hub (마스터 노드)
+
+**도메인**: 학생 통합 관리 및 교육 워크플로우 오케스트레이션
+
+#### 책임 (Responsibilities)
+- 학생 마스터 데이터 관리 (Single Source of Truth)
+- 통합 학생 프로필 제공 (모든 노드 데이터 집계)
+- 학습 경로 생성 및 관리
+- 자동 개입 시스템 (조건 기반 액션 트리거)
+- 주기적 작업 스케줄링 (리포트 생성, 학습 계획 갱신)
+- 학급/학년/학교 단위 통계 및 대시보드
+
+#### 기술 스택
+- **Language**: Python 3.11+
+- **Framework**: FastAPI
+- **Database**: PostgreSQL 14 (Primary), Redis (Cache + Events)
+- **Scheduler**: Celery + Redis
+- **MCP**: Server (외부 호출 받음) + Client (Node 1-6 호출)
+- **Notification**: Email (SMTP), SMS (계획)
+
+#### API Endpoints
+```
+# Student Management
+POST /api/v1/students                  - 학생 생성
+GET  /api/v1/students/{id}             - 학생 조회
+PUT  /api/v1/students/{id}             - 학생 수정
+DELETE /api/v1/students/{id}           - 학생 삭제
+
+# Unified Profile
+GET  /api/v1/students/{id}/profile     - 통합 프로필 조회
+
+# Learning Path
+POST /api/v1/learning-paths            - 학습 경로 생성
+GET  /api/v1/learning-paths/{id}       - 학습 경로 조회
+PUT  /api/v1/learning-paths/{id}       - 학습 경로 수정
+
+# Interventions
+POST /api/v1/interventions             - 개입 생성
+GET  /api/v1/interventions/{id}        - 개입 조회
+
+# Schedules
+POST /api/v1/schedules                 - 스케줄 생성
+GET  /api/v1/schedules                 - 스케줄 목록
+
+# Analytics
+GET  /api/v1/analytics/class/{id}      - 학급 통계
+GET  /api/v1/analytics/school/{code}   - 학교 대시보드
+```
+
+#### MCP Tools (Server - 외부에게 제공)
+```
+get_unified_profile          - 통합 학생 프로필 조회
+create_learning_intervention - 자동 개입 생성
+schedule_periodic_task       - 주기적 작업 스케줄링
+get_class_analytics          - 학급/학교 통계
+```
+
+#### MCP Calls (Client - 다른 노드 호출)
+```
+→ Node 1: find_concept_gap, get_prerequisites
+→ Node 2: get_student_mastery, find_similar_dna_problems
+→ Node 3: generate_picket_problem
+→ Node 4: get_failure_pattern, get_student_heatmap
+→ Node 5: generate_typst_report
+→ Node 6: query_school_info
+```
+
+#### Port
+`8000` (마스터 노드로서 8000번 사용)
+
+#### Dependencies
+- PostgreSQL: `postgresql://localhost:5432/student_hub`
+- Redis: `redis://localhost:6379/0`
+- Celery Broker: `redis://localhost:6379/1`
+- All Node 1-6 MCP Servers
+
+---
 
 ### 2.1 Node 1: Logic Engine
 

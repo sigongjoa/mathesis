@@ -1,8 +1,23 @@
-# LLM Orchestrator (The Brain) - 중앙 제어 시스템
+# LLM Orchestrator (The Brain) - 범용 워크플로우 엔진
 
 ## 개요
 
-**LLM Orchestrator**는 Mathesis-Synapse의 두뇌로, **자연어 명령어**를 받아 6개 MCP 노드를 조율하여 복잡한 교육 워크플로우를 실행하는 중앙 제어 시스템입니다. LangGraph 기반의 **State Graph** 엔진으로 구현되며, YAML로 정의된 **선언적 Flow**를 해석하여 동적으로 실행합니다.
+**LLM Orchestrator**는 Mathesis-Synapse의 두뇌로, **자연어 명령어**를 받아 7개 MCP 노드(Node 0-6)를 조율하여 복잡한 교육 워크플로우를 실행하는 범용 제어 시스템입니다. LangGraph 기반의 **State Graph** 엔진으로 구현되며, YAML로 정의된 **선언적 Flow**를 해석하여 동적으로 실행합니다.
+
+### Node 0 (Student Hub)과의 관계
+
+- **LLM Orchestrator**: 범용 워크플로우 엔진 (자연어 → YAML Flow 실행)
+- **Node 0 (Student Hub)**: 학생 도메인 특화 워크플로우 + 마스터 데이터 관리
+
+**협력 관계**:
+```
+사용자 자연어 명령
+  ↓
+LLM Orchestrator (명령 해석)
+  ↓
+├─→ 범용 워크플로우: Node 0-6 직접 호출
+└─→ 학생 도메인: Node 0에 위임 → Node 0이 다른 노드 조율
+```
 
 ### 핵심 개념
 
@@ -51,7 +66,8 @@ package "LLM Orchestrator (The Brain)" {
     [State Manager] as SM
 }
 
-package "MCP Servers (6 Nodes)" {
+package "MCP Servers (7 Nodes)" {
+    [Student Hub] as N0
     [Logic Engine] as N1
     [Q-DNA] as N2
     [Gen Node] as N3
@@ -69,6 +85,7 @@ NLI --> FI: Parse Intent
 FI --> YAML: Load Flow Definition
 FI --> LGE: Execute Flow
 LGE --> MCM: Call MCP Tools
+MCM --> N0
 MCM --> N1
 MCM --> N2
 MCM --> N3
@@ -487,6 +504,7 @@ class MCPClientManager:
     async def connect_all_servers(self):
         """모든 MCP 서버에 연결"""
         server_configs = {
+            "student-hub-mcp": {"command": "python", "args": ["nodes/node0_student_hub/mcp_server.py"]},
             "logic-engine-mcp": {"command": "python", "args": ["nodes/node1_logic_engine/server.py"]},
             "q-dna-mcp": {"command": "python", "args": ["nodes/node2_q_dna/server.py"]},
             "gen-node-mcp": {"command": "python", "args": ["nodes/node3_gen_node/server.py"]},
@@ -1136,7 +1154,7 @@ async def get_execution_status(execution_id: str):
 
 ---
 
-**생성 일시**: 2026-01-08
-**문서 버전**: 1.0
+**생성 일시**: 2026-01-09
+**문서 버전**: 1.1
 **담당 컴포넌트**: LLM Orchestrator (The Brain)
-**관련 문서**: 00_MCP_SYSTEM_DESIGN.md, All NODE documents
+**관련 문서**: 00_MCP_SYSTEM_DESIGN.md, NODE0_STUDENT_HUB.md, All NODE documents

@@ -22,20 +22,24 @@
 
 ## 🏗️ MSA Architecture
 
-4개의 독립 마이크로서비스 + 공통 라이브러리로 구성
+**Node 0 (마스터 노드) + 6개 도메인 서비스 + 공통 라이브러리**로 구성
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                  Mathesis Platform                       │
-├─────────────────────────────────────────────────────────┤
-│  Node 1        Node 2         Node 5        Node 6      │
-│  Logic         Q-DNA          Q-Metrics     School      │
-│  Engine        문제은행        시험분석      Info        │
-│  교육이론       BKT/IRT        교육공학      RAG         │
-├─────────────────────────────────────────────────────────┤
-│              mathesis-common (공통 라이브러리)            │
-│       LLM • Database • Crawlers • Export                │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                    Mathesis Platform                          │
+├──────────────────────────────────────────────────────────────┤
+│                     Node 0: Student Hub                       │
+│              학생 통합 관리 & 교육 워크플로우 오케스트레이션    │
+│          (Single Source of Truth + Workflow Orchestrator)    │
+├──────────────────────────────────────────────────────────────┤
+│  Node 1    Node 2    Node 3    Node 4    Node 5    Node 6   │
+│  Logic     Q-DNA     Gen       Lab       Report    School    │
+│  Engine    문제은행  문제생성   학습추적   리포트    정보      │
+│  교육이론   BKT/IRT   AI생성    히트맵    Typst     RAG       │
+├──────────────────────────────────────────────────────────────┤
+│                mathesis-common (공통 라이브러리)              │
+│           LLM • Database • Crawlers • Export                 │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 **상세 문서**: [MSA 아키텍처](./architecture/01_MSA_ARCHITECTURE.md)
@@ -46,11 +50,16 @@
 
 | Service | Port | Domain | Tech Stack | Status |
 |---------|------|--------|------------|--------|
-| **[Node 1: Logic Engine](../node1_logic_engine/)** | 8001 | 교육 이론 지식 그래프 | Python, Neo4j, Ollama | ✅ Production |
-| **[Node 2: Q-DNA](../node2_q_dna/)** | 8002 | 지능형 문제 은행 | FastAPI, PostgreSQL, Tesseract | ✅ Production |
-| **[Node 5: Q-Metrics](../node5_q_metrics/)** | 8005 | 시험지 분석 시스템 | FastAPI, Neo4j, Redis | 🚧 Beta |
-| **[Node 6: School Info](../node6_school_info/)** | 8006 | 학교 정보 RAG | FastAPI, ChromaDB, Typst | ✅ Production |
+| **[Node 0: Student Hub](./nodes/NODE0_STUDENT_HUB.md)** 🌟 | 8000 | 학생 통합 관리 & 워크플로우 오케스트레이션 | FastAPI, PostgreSQL, Redis, Celery | 🚧 Design |
+| **[Node 1: Logic Engine](./nodes/NODE1_LOGIC_ENGINE.md)** | 8001 | 교육 이론 지식 그래프 | Python, Neo4j, Ollama | ✅ Production |
+| **[Node 2: Q-DNA](./nodes/NODE2_Q_DNA.md)** | 8002 | 지능형 문제 은행 | FastAPI, PostgreSQL, Tesseract | ✅ Production |
+| **[Node 3: Gen Node](./nodes/NODE3_GEN_NODE.md)** | 8003 | AI 기반 문제 생성 | FastAPI, Ollama | 🚧 Design |
+| **[Node 4: Lab Node](./nodes/NODE4_LAB_NODE.md)** | 8004 | 학습 활동 추적 & 히트맵 | FastAPI, PostgreSQL, Redis | 🚧 Design |
+| **[Node 5: Report Node](./nodes/NODE5_REPORT_NODE.md)** | 8005 | 진단 리포트 생성 | FastAPI, Typst, Plotly | 🚧 Design |
+| **[Node 6: School Info](./nodes/NODE6_SCHOOL_INFO.md)** | 8006 | 학교 정보 RAG | FastAPI, ChromaDB, Typst | ✅ Production |
 | **[mathesis-common](../mathesis-common/)** | - | 공통 라이브러리 | Python Package | ✅ Stable |
+
+🌟 **Node 0 (Student Hub)**: 마스터 노드로서 모든 학생 데이터의 단일 진실 공급원이자, 교육 워크플로우 자동화를 담당
 
 ---
 
@@ -84,9 +93,12 @@ docker-compose ps
 ```
 
 ### Access Services
+- **Student Hub** (마스터 노드): http://localhost:8000/docs
 - **Logic Engine**: http://localhost:8001/docs
 - **Q-DNA**: http://localhost:8002/docs
-- **Q-Metrics**: http://localhost:8005/docs
+- **Gen Node**: http://localhost:8003/docs
+- **Lab Node**: http://localhost:8004/docs
+- **Report Node**: http://localhost:8005/docs
 - **School Info**: http://localhost:8006/docs
 
 **상세 가이드**: [Quick Start Guide](./guides/QUICKSTART.md)
@@ -204,6 +216,10 @@ docker-compose ps
 
 ### Phase 2: Advanced Features (🚧 진행 중)
 - [x] Q-Metrics - 시험 분석
+- [ ] **Node 0 (Student Hub)** - 마스터 노드 구현
+- [ ] Gen Node - AI 문제 생성
+- [ ] Lab Node - 학습 추적
+- [ ] Report Node - 진단 리포트
 - [ ] API Gateway 구축
 - [ ] 이벤트 기반 통신 (RabbitMQ/Kafka)
 - [ ] 중앙 인증/인가 (Keycloak)
@@ -267,6 +283,6 @@ MIT License - see [LICENSE](../LICENSE) for details
 
 ---
 
-**Last Updated**: 2026-01-08
-**Version**: 1.0.0
-**Architecture**: Microservices (MSA)
+**Last Updated**: 2026-01-09
+**Version**: 1.1.0
+**Architecture**: Microservices (MSA) with Master Node (Node 0)
