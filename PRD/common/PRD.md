@@ -24,7 +24,7 @@
 
 ### 1.1 제품 비전
 
-**mathesis-common**은 Mathesis 플랫폼의 모든 노드(Node 0-6)에서 공통으로 사용하는 **핵심 라이브러리**로, 일관된 개발 경험과 코드 재사용성을 제공합니다.
+**mathesis-common**은 Mathesis 플랫폼의 모든 노드(Node 0-7)에서 공통으로 사용하는 **핵심 라이브러리**로, 일관된 개발 경험과 코드 재사용성을 제공합니다.
 
 ### 1.2 제품 목적
 
@@ -499,6 +499,7 @@ mathesis-common/
 
 - [Architecture Overview](../../architecture/01_MSA_ARCHITECTURE.md)
 - [Node 0 PRD](../node0/PRD.md)
+- [Node 7 PRD](../node7/PRD.md)
 - [mathesis-common GitHub](https://github.com/mathesis/mathesis-common)
 
 ### C. 연락처

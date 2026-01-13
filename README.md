@@ -32,10 +32,10 @@
 │              학생 통합 관리 & 교육 워크플로우 오케스트레이션    │
 │          (Single Source of Truth + Workflow Orchestrator)    │
 ├──────────────────────────────────────────────────────────────┤
-│  Node 1    Node 2    Node 3    Node 4    Node 5    Node 6   │
-│  Logic     Q-DNA     Gen       Lab       Report    School    │
-│  Engine    문제은행  문제생성   학습추적   리포트    정보      │
-│  교육이론   BKT/IRT   AI생성    히트맵    Typst     RAG       │
+│  Node 1    Node 2    Node 3    Node 4    Node 5    Node 6   Node 7 │
+│  Logic     Q-DNA     Gen       Lab       Report    School   Error  │
+│  Engine    문제은행  문제생성   학습추적   리포트    정보     Note   │
+│  교육이론   BKT/IRT   AI생성    히트맵    Typst     RAG      Anki   │
 ├──────────────────────────────────────────────────────────────┤
 │                mathesis-common (공통 라이브러리)              │
 │           LLM • Database • Crawlers • Export                 │
@@ -52,12 +52,18 @@
 |---------|------|--------|------------|--------|
 | **[Node 0: Student Hub](./nodes/NODE0_STUDENT_HUB.md)** 🌟 | 8000 | 학생 통합 관리 & 워크플로우 오케스트레이션 | FastAPI, PostgreSQL, Redis, Celery | 🚧 Design |
 | **[Node 1: Logic Engine](./nodes/NODE1_LOGIC_ENGINE.md)** | 8001 | 교육 이론 지식 그래프 | Python, Neo4j, Ollama | ✅ Production |
-| **[Node 2: Q-DNA](./nodes/NODE2_Q_DNA.md)** | 8002 | 지능형 문제 은행 | FastAPI, PostgreSQL, Tesseract | ✅ Production |
+| **[Node 2: Q-DNA](./nodes/NODE2_Q_DNA.md)** ⭐ | 8002 | 지능형 문제 은행 | FastAPI, PostgreSQL, mathesis_core | ✅ Refactored |
 | **[Node 3: Gen Node](./nodes/NODE3_GEN_NODE.md)** | 8003 | AI 기반 문제 생성 | FastAPI, Ollama | 🚧 Design |
 | **[Node 4: Lab Node](./nodes/NODE4_LAB_NODE.md)** | 8004 | 학습 활동 추적 & 히트맵 | FastAPI, PostgreSQL, Redis | 🚧 Design |
 | **[Node 5: Report Node](./nodes/NODE5_REPORT_NODE.md)** | 8005 | 진단 리포트 생성 | FastAPI, Typst, Plotly | 🚧 Design |
 | **[Node 6: School Info](./nodes/NODE6_SCHOOL_INFO.md)** | 8006 | 학교 정보 RAG | FastAPI, ChromaDB, Typst | ✅ Production |
-| **[mathesis-common](../mathesis-common/)** | - | 공통 라이브러리 | Python Package | ✅ Stable |
+| **[Node 7: Error Note](./nodes/NODE7_ERROR_NOTE.md)** ⭐ | 8007 | 메타인지 오답노트 & Anki | FastAPI, PostgreSQL, mathesis_core | ✅ Refactored |
+| **[mathesis-common](../mathesis-common/)** ⭐ | - | 공통 모듈 라이브러리 | Vision, Analysis, Generation | ✅ Core Complete |
+
+⭐ **Recent Updates**:
+- **mathesis-common**: 핵심 3대 모듈 완성 (Vision, Analysis, Generation)
+- **Node 2**: mathesis_core 모듈 활용으로 리팩토링 완료
+- **Node 7**: mathesis_core 모듈 통합, 기능 강화
 
 🌟 **Node 0 (Student Hub)**: 마스터 노드로서 모든 학생 데이터의 단일 진실 공급원이자, 교육 워크플로우 자동화를 담당
 
@@ -100,6 +106,7 @@ docker-compose ps
 - **Lab Node**: http://localhost:8004/docs
 - **Report Node**: http://localhost:8005/docs
 - **School Info**: http://localhost:8006/docs
+- **Error Note**: http://localhost:8007/docs
 
 **상세 가이드**: [Quick Start Guide](./guides/QUICKSTART.md)
 
@@ -108,11 +115,11 @@ docker-compose ps
 ## 📚 Documentation
 
 ### Architecture
-- [00. System Overview](./architecture/00_SYSTEM_OVERVIEW.md) - 시스템 전체 개요
+- [00. MCP System Design](./architecture/00_MCP_SYSTEM_DESIGN.md) - MCP 시스템 설계
 - [01. MSA Architecture](./architecture/01_MSA_ARCHITECTURE.md) - 마이크로서비스 아키텍처
-- [02. Service Map](./architecture/02_SERVICE_MAP.md) - 서비스 간 관계도
-- [03. Data Flow](./architecture/03_DATA_FLOW.md) - 데이터 흐름
-- [04. Infrastructure](./architecture/04_INFRASTRUCTURE.md) - 인프라 구성
+- [02. Modular Architecture](./architecture/02_MODULAR_ARCHITECTURE.md) ⭐ - 모듈 기반 아키텍처
+- [03. Module Specifications](./architecture/03_MODULE_SPECIFICATIONS.md) ⭐ - 모듈 API 명세
+- [04. Modularization Recommendations](./architecture/04_MODULARIZATION_RECOMMENDATIONS.md) ⭐ - 모듈화 분석
 
 ### Diagrams
 - [System Context](./diagrams/system_context.puml) - C4 Level 1
@@ -127,9 +134,10 @@ docker-compose ps
 
 ### Guides
 - [Quick Start](./guides/QUICKSTART.md) - 빠른 시작
-- [Deployment](./guides/DEPLOYMENT.md) - 배포 가이드
-- [Monitoring](./guides/MONITORING.md) - 모니터링
-- [Troubleshooting](./guides/TROUBLESHOOTING.md) - 문제 해결
+- [Modular Migration Guide](./guides/MODULAR_MIGRATION_GUIDE.md) ⭐ - 모듈화 마이그레이션 가이드
+- [Deployment](./guides/DEPLOYMENT.md) - 배포 가이드 (예정)
+- [Monitoring](./guides/MONITORING.md) - 모니터링 (예정)
+- [Troubleshooting](./guides/TROUBLESHOOTING.md) - 문제 해결 (예정)
 
 ### ADR (Architecture Decision Records)
 - [001. MSA Adoption](./adr/001-msa-adoption.md) - MSA 도입 결정
@@ -212,12 +220,22 @@ docker-compose ps
 - [x] Logic Engine - 교육 이론 지식 그래프
 - [x] Q-DNA - 문제 은행 + BKT/IRT
 - [x] School Info - 학교 정보 RAG
-- [x] mathesis-common - 공통 라이브러리
+- [x] mathesis-common - 공통 라이브러리 구조 확립
 
-### Phase 2: Advanced Features (🚧 진행 중)
+### Phase 2: Module-Based Architecture (✅ 완료)
+- [x] **mathesis_core 핵심 모듈 구축**
+  - [x] Vision Module (OCREngine) - 이미지 → 텍스트/LaTeX
+  - [x] Analysis Module (DNAAnalyzer) - 문제 DNA 추출
+  - [x] Generation Module (ProblemGenerator) - 문제 생성
+  - [x] Prompts Module - LLM 프롬프트 중앙화
+- [x] **Node 2 리팩토링** - mathesis_core 모듈 활용
+- [x] **Node 7 구축 & 리팩토링** - Anki 시스템 + mathesis_core 통합
+- [x] **TDD 테스트 작성** - 30개 테스트, 97% 커버리지
+
+### Phase 3: Advanced Features (🚧 진행 중)
 - [x] Q-Metrics - 시험 분석
 - [ ] **Node 0 (Student Hub)** - 마스터 노드 구현
-- [ ] Gen Node - AI 문제 생성
+- [ ] Gen Node - AI 문제 생성 (mathesis_core 활용 가능)
 - [ ] Lab Node - 학습 추적
 - [ ] Report Node - 진단 리포트
 - [ ] API Gateway 구축
@@ -283,6 +301,6 @@ MIT License - see [LICENSE](../LICENSE) for details
 
 ---
 
-**Last Updated**: 2026-01-09
-**Version**: 1.1.0
-**Architecture**: Microservices (MSA) with Master Node (Node 0)
+**Last Updated**: 2026-01-10
+**Version**: 1.2.0
+**Architecture**: Microservices (MSA) + Module-Based Core (mathesis_core)

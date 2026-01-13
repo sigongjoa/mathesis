@@ -23,6 +23,7 @@
 | **Node 4: Lab Node** | 학습 활동 추적 | 히트맵, 활동 로그, 실패 패턴 |
 | **Node 5: Report Node** | 진단 리포트 | Typst 리포트, 성장 차트, AI 진단 |
 | **Node 6: School Info** | 외부 데이터 통합 | 크롤링, RAG |
+| **Node 7: Error Note** | 오답노트 & Anki | 메타인지 분석, 간격 반복 복습 |
 
 🌟 **Node 0 (Student Hub)**: 유일한 마스터 노드로서 MCP Server + Client 역할을 동시에 수행
 
@@ -39,6 +40,7 @@ Logic Engine   → Neo4j (그래프) + PostgreSQL (메타데이터)
 Q-DNA          → PostgreSQL (관계형)
 Q-Metrics      → Neo4j (그래프) + Redis (캐시)
 School Info    → ChromaDB (벡터) + 파일시스템
+Error Note     → PostgreSQL (관계형)
 ```
 
 #### 기술 스택 자유도
@@ -128,6 +130,7 @@ get_class_analytics          - 학급/학교 통계
 → Node 4: get_failure_pattern, get_student_heatmap
 → Node 5: generate_typst_report
 → Node 6: query_school_info
+→ Node 7: get_due_reviews, analyze_error_patterns
 ```
 
 #### Port
@@ -280,7 +283,47 @@ GET  /rag/export/{doc_id}            - Enhanced JSON 다운로드
 
 ---
 
-### 2.5 mathesis-common
+---
+
+### 2.5 Node 7: Error Note System
+
+**도메인**: 선생님 전용 메타인지 오답노트 및 Anki 복습 시스템
+
+#### 책임 (Responsibilities)
+- 오답노트 생성 (OCR 및 수동 입력)
+- 메타인지 5단계 프레임워크를 기반으로 오답 원인 구조화
+- Anki(SM-2) 알고리즘을 활용한 최적 복습 스케줄 관리
+- LLM 기반 유사/변형 문제 자동 생성
+- 학생별/학급별 오답 패턴 분석 및 리포팅
+- 복습 대상 선생님 알림
+
+#### 기술 스택
+- **Language**: Python 3.11+ / TypeScript
+- **Framework**: FastAPI (Backend), React 19 (Frontend)
+- **Database**: PostgreSQL 14+
+- **LLM**: Ollama (Vision + Text)
+- **Worker**: Celery + Redis
+
+#### API Endpoints
+```
+POST /api/v1/error-notes            - 오답노트 생성
+GET  /api/v1/error-notes/{id}        - 오답노트 상세 조회
+POST /api/v1/reviews/submit         - 복습 결과 제출
+GET  /api/v1/reviews/due            - 오늘 복습 대상 조회
+GET  /api/v1/analysis/patterns      - 오답 패턴 분석
+```
+
+#### Port
+`8007`
+
+#### Dependencies
+- PostgreSQL: `postgresql://localhost:5432/error_note`
+- Redis: `redis://localhost:6379/2`
+- Ollama: `http://localhost:11434`
+
+---
+
+### 2.6 mathesis-common
 
 **도메인**: 공통 라이브러리
 
